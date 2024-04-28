@@ -145,7 +145,7 @@ public:
     }
 
     card pull_card(){
-        std::uniform_int_distribution<int> range(1, current_size);
+        std::uniform_int_distribution<int> range(0, current_size);
         int rand_int = range(twister);
 
         card pulled_card = cards[rand_int];
