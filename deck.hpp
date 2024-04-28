@@ -2,8 +2,23 @@
 #include <algorithm> 
 #include <random> 
 
+//#include "enums.hpp"
+
 std::random_device rd; 
 std::mt19937 twister(rd()); 
+
+const std::string spade = "\u2660";
+const std::string heart = "\u2665";
+const std::string diamond = "\u2666";
+const std::string club = "\u2663";
+
+const std::string cornerUL = "\U0000250F";
+const std::string cornerUR = "\U00002513";
+const std::string cornerDL = "\U00002517";
+const std::string cornerDR = "\U0000251B";
+
+const std::string flatV = "\U00002503";
+const std::string flatH = "\U00002501";
 
 enum card_suit {
     CLUBS, SPADES, HEARTS, DIAMONDS
@@ -145,14 +160,67 @@ public:
     }
 
     card pull_card(){
-        std::uniform_int_distribution<int> range(0, current_size);
-        int rand_int = range(twister);
+        //std::uniform_int_distribution<int> range(0, current_size);
+        // int rand_int = range(twister);
 
-        card pulled_card = cards[rand_int];
+        card pulled_card = cards[0];
 
-        cards.erase(cards.begin() + rand_int);
+        cards.erase(cards.begin());
         current_size -= 1;
 
         return pulled_card;
     }
 };
+
+std::string card_to_string(card_suit suit, card_rank rank){
+    std::string result = "";
+    //std::cout << cornerUL << flatH << flatH << flatH  << cornerUR << std::endl;
+    result += cornerUL;
+    for(int i = 0; i < 3; i++){
+        result += flatH;
+    }
+    result += cornerUR;
+    result += "\n";
+
+    //std::cout << flatV << "\u2660  " << flatV << std::endl;
+    result += flatV;
+    switch(suit){
+        case SPADES: result += spade; break;
+        case HEARTS: result += heart; break;
+        case DIAMONDS: result += diamond; break;
+        case CLUBS: result += club; break;
+    }
+    result += "  ";
+    result += flatV;
+    result += "\n";
+
+    //std::cout << flatV << " 10" << flatV << std::endl;
+    result += flatV;
+    switch(rank){
+        case TWO: result += "  2"; break;
+        case THREE: result += "  3"; break;
+        case FOUR: result += "  4"; break;
+        case FIVE: result += "  5"; break;
+        case SIX: result += "  6"; break;
+        case SEVEN: result += "  7"; break;
+        case EIGHT: result += "  8"; break;
+        case NINE: result += "  9"; break;
+        case TEN: result += "  10"; break;
+        case JACK: result += "  J"; break;
+        case QUEEN: result += "  Q"; break;
+        case KING: result += "  K"; break;
+        case ACE: result += "  A"; break;
+    }
+    result += flatV;
+    result += "\n";
+
+    // std::cout << cornerDL << flatH << flatH << flatH << cornerDR << std::endl;
+    result += cornerDL;
+    for(int i = 0; i < 3; i++){
+        result += flatH;
+    }
+    result += cornerDR;
+    result += "\n";
+
+    return result;
+}
