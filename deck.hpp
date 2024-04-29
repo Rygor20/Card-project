@@ -2,22 +2,20 @@
 #include <algorithm> 
 #include <random> 
 
-//#include "enums.hpp"
-
 std::random_device rd; 
 std::mt19937 twister(rd()); 
 
-const std::string spade = "\u2660";
+const std::string spade = "\u2660"; //5
 const std::string heart = "\u2665";
 const std::string diamond = "\u2666";
 const std::string club = "\u2663";
 
-const std::string cornerUL = "\U0000250F";
+const std::string cornerUL = "\U0000250F"; //9
 const std::string cornerUR = "\U00002513";
 const std::string cornerDL = "\U00002517";
 const std::string cornerDR = "\U0000251B";
 
-const std::string flatV = "\U00002503";
+const std::string flatV = "\U00002503"; //9
 const std::string flatH = "\U00002501";
 
 enum card_suit {
@@ -160,9 +158,6 @@ public:
     }
 
     card pull_card(){
-        //std::uniform_int_distribution<int> range(0, current_size);
-        // int rand_int = range(twister);
-
         card pulled_card = cards[0];
 
         cards.erase(cards.begin());
@@ -174,7 +169,7 @@ public:
 
 std::string card_to_string(card_suit suit, card_rank rank){
     std::string result = "";
-    //std::cout << cornerUL << flatH << flatH << flatH  << cornerUR << std::endl;
+
     result += cornerUL;
     for(int i = 0; i < 3; i++){
         result += flatH;
@@ -182,7 +177,6 @@ std::string card_to_string(card_suit suit, card_rank rank){
     result += cornerUR;
     result += "\n";
 
-    //std::cout << flatV << "\u2660  " << flatV << std::endl;
     result += flatV;
     switch(suit){
         case SPADES: result += spade; break;
@@ -194,7 +188,6 @@ std::string card_to_string(card_suit suit, card_rank rank){
     result += flatV;
     result += "\n";
 
-    //std::cout << flatV << " 10" << flatV << std::endl;
     result += flatV;
     switch(rank){
         case TWO: result += "  2"; break;
@@ -205,7 +198,7 @@ std::string card_to_string(card_suit suit, card_rank rank){
         case SEVEN: result += "  7"; break;
         case EIGHT: result += "  8"; break;
         case NINE: result += "  9"; break;
-        case TEN: result += "  10"; break;
+        case TEN: result += " 10"; break;
         case JACK: result += "  J"; break;
         case QUEEN: result += "  Q"; break;
         case KING: result += "  K"; break;
@@ -214,13 +207,41 @@ std::string card_to_string(card_suit suit, card_rank rank){
     result += flatV;
     result += "\n";
 
-    // std::cout << cornerDL << flatH << flatH << flatH << cornerDR << std::endl;
     result += cornerDL;
     for(int i = 0; i < 3; i++){
         result += flatH;
     }
     result += cornerDR;
-    result += "\n";
 
     return result;
+}
+
+std::string show_hand(const std::vector<card> hand){
+    std::string whole;
+
+    for(int row = 0; row <= 3; row++){
+        for(card card_in_hand: hand){
+            std::string image = card_to_string(card_in_hand.get_suit(), card_in_hand.get_rank());
+            std::string line;
+
+            if(row == 0){
+                line = image.substr(0, 15);
+            }
+            else if(row == 1){
+                line = image.substr(16, 11);
+            }
+            else if(row == 2){
+                line = image.substr(28, 9);
+            }
+            else if(row == 3){
+                line = image.substr(38, 15);
+            }
+
+            whole += line;
+            whole += "   ";
+        }
+        whole += "\n";
+    }
+
+    return whole;
 }
