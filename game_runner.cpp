@@ -40,7 +40,7 @@ int main(int argc, char const *argv[])
     {
         system("clear");
 
-        std::string hand = show_hand(pulled_cards);
+        std::string hand = show_dealer_hand(pulled_cards);
         std::cout << hand << std::endl;
 
         if(missinput){

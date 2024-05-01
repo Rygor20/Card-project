@@ -257,3 +257,49 @@ std::string show_hand(const std::vector<card> hand){
 
     return whole;
 }
+
+std::string show_dealer_hand(const std::vector<card> hand){
+    std::string whole;
+
+    if(hand.size() > 2){
+        return show_hand(hand);
+    }
+
+    for (int row = 0; row <= 3; row++) {
+        for (size_t i = 0; i < hand.size(); i++) {
+            card card_in_hand = hand[i];
+            std::string image = card_to_string(card_in_hand.get_suit(), card_in_hand.get_rank());
+            std::string line;
+
+            if (row == 0) {
+                line = image.substr(0, 15);
+            } else if (row == 1) {
+                if(i == 1){
+                    line = flatV + "?  " + flatV;
+                }
+                else{
+                    line = image.substr(16, 11);
+                }
+            } else if (row == 2) {
+                if(i == 1){
+                    line = flatV + "  ?" + flatV;
+                }
+                else{
+                    line = image.substr(28, 9);
+                }
+            } else if (row == 3) {
+                line = image.substr(38, 15);
+            }
+
+            // if (i == 1) { // Check if it's the second card
+            //     line = "[Hidden]   "; // Hide the second card
+            // }
+
+            whole += line;
+            whole += "   ";
+        }
+        whole += "\n";
+    }
+
+    return whole;
+}
