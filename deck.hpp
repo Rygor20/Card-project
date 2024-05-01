@@ -51,6 +51,8 @@ private:
     int value;
     
 public:
+    card() {}
+
     card(const card_rank rank, const card_suit suit){
         this->rank = rank;
         this->suit = suit;
@@ -80,6 +82,16 @@ public:
 
     int get_value(){
         return this->value;
+    }
+
+    card& operator=(const card& other) {
+        if (this != &other) {
+            this->suit = other.suit;
+            this->colour = other.colour;
+            this->rank = other.rank;
+            this->value = other.value;
+        }
+        return *this;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const card& c) {
