@@ -1,6 +1,7 @@
 #include <vector>
 #include <algorithm> 
 #include <random> 
+#include <string>
 
 std::random_device rd; 
 std::mt19937 twister(rd()); 
@@ -28,6 +29,10 @@ enum card_colour {
 
 enum card_rank {
     TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE
+};
+
+enum who {
+    DEALER, PLAYER
 };
 
 int value_from_rank(card_rank rank){
@@ -92,6 +97,13 @@ public:
             this->value = other.value;
         }
         return *this;
+    }
+
+    bool operator==(const card& other) {
+        return this->suit == other.suit &&
+               this->get_colour() == other.colour &&
+               this->get_rank() == other.rank &&
+               this->get_value() == other.value;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const card& c) {
@@ -228,7 +240,7 @@ std::string card_to_string(card_suit suit, card_rank rank){
     return result;
 }
 
-std::string show_hand(const std::vector<card> hand){
+std::string show_hand(const std::vector<card> hand, const who person){
     std::string whole;
 
     for(int row = 0; row <= 3; row++){
@@ -240,10 +252,22 @@ std::string show_hand(const std::vector<card> hand){
                 line = image.substr(0, 15);
             }
             else if(row == 1){
-                line = image.substr(16, 11);
+                // line = image.substr(16, 11);
+                if(person == DEALER && hand.size() == 2 && card_in_hand == hand[1]){
+                    line = flatV + "?  " + flatV;
+                }
+                else{
+                    line = image.substr(16, 11);
+                }
             }
             else if(row == 2){
-                line = image.substr(28, 9);
+                // line = image.substr(28, 9);
+                if(person == DEALER && hand.size() == 2 && card_in_hand == hand[1]){
+                    line = flatV + "  ?" + flatV;
+                }
+                else{
+                    line = image.substr(28, 9);
+                }
             }
             else if(row == 3){
                 line = image.substr(38, 15);
@@ -258,48 +282,87 @@ std::string show_hand(const std::vector<card> hand){
     return whole;
 }
 
-std::string show_dealer_hand(const std::vector<card> hand){
-    std::string whole;
+// std::string show_dealer_hand(const std::vector<card> hand){
+//     std::string whole;
 
-    if(hand.size() > 2){
-        return show_hand(hand);
-    }
+//     if(hand.size() > 2){
+//         return show_hand(hand);
+//     }
 
-    for (int row = 0; row <= 3; row++) {
-        for (size_t i = 0; i < hand.size(); i++) {
-            card card_in_hand = hand[i];
-            std::string image = card_to_string(card_in_hand.get_suit(), card_in_hand.get_rank());
-            std::string line;
+//     for (int row = 0; row <= 3; row++) {
+//         for (size_t i = 0; i < hand.size(); i++) {
+//             card card_in_hand = hand[i];
+//             std::string image = card_to_string(card_in_hand.get_suit(), card_in_hand.get_rank());
+//             std::string line;
 
-            if (row == 0) {
-                line = image.substr(0, 15);
-            } else if (row == 1) {
-                if(i == 1){
-                    line = flatV + "?  " + flatV;
-                }
-                else{
-                    line = image.substr(16, 11);
-                }
-            } else if (row == 2) {
-                if(i == 1){
-                    line = flatV + "  ?" + flatV;
-                }
-                else{
-                    line = image.substr(28, 9);
-                }
-            } else if (row == 3) {
-                line = image.substr(38, 15);
-            }
+//             if (row == 0) {
+//                 line = image.substr(0, 15);
+//             } else if (row == 1) {
+//                 if(i == 1){
+//                     line = flatV + "?  " + flatV;
+//                 }
+//                 else{
+//                     line = image.substr(16, 11);
+//                 }
+//             } else if (row == 2) {
+//                 if(i == 1){
+//                     line = flatV + "  ?" + flatV;
+//                 }
+//                 else{
+//                     line = image.substr(28, 9);
+//                 }
+//             } else if (row == 3) {
+//                 line = image.substr(38, 15);
+//             }
 
-            // if (i == 1) { // Check if it's the second card
-            //     line = "[Hidden]   "; // Hide the second card
-            // }
+//             whole += line;
+//             whole += "   ";
+//         }
+//         whole += "\n";
+//     }
 
-            whole += line;
-            whole += "   ";
+//     return whole;
+// }
+
+std::pair<int, std::string> calc_hand_value(const std::vector<card> hand){
+    std::pair<int, std::string> result;
+    int total = 0;
+    int ace_count = 0;
+    bool contains_ace = false;
+
+    for(card card_in_hand: hand){
+        total += card_in_hand.get_value();
+
+        if(card_in_hand.get_rank() == ACE){
+            ace_count += 1;
+            contains_ace = true;
         }
-        whole += "\n";
     }
 
-    return whole;
+    if(total > 21 && ace_count != 0){
+        while(total > 21){
+            total -= 10;
+            ace_count -= 1;
+
+            if(ace_count == 0){
+                break;
+            }
+        }
+    }
+
+    result.first = total;
+
+    while(ace_count != 0){
+        total -= 10;
+        ace_count -= 1;
+    }
+
+    if(contains_ace){
+        result.second = std::to_string(result.first) + " (" + std::to_string(total) + ")";
+    }
+    else{
+        result.second = std::to_string(result.first);
+    }
+
+    return result;
 }
