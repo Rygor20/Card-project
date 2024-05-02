@@ -48,18 +48,18 @@ int main(int argc, char const *argv[])
 
     deal_cards(hands, card_deck);
 
-    std::cout << "Dealer's hand size: " << std::to_string(hands[1].size()) << std::endl;
+    //std::cout << "Dealer's hand size: " << std::to_string(hands[1].size()) << std::endl;
 
     while (true)
     {
-        std::cout << "Dealer: " << calc_hand_value(hands[1]).second << std::endl;
+        std::cout << "Dealer: " << calc_hand_value(hands[1], DEALER).second << std::endl;
         // hand = show_dealer_hand(hands[1]);
         hand = show_hand(hands[1], DEALER);
         std::cout << hand << std::endl;
 
         std::cout << "\n" << std::endl;
 
-        std::cout << "Player: " << calc_hand_value(hands[0]).second << std::endl;
+        std::cout << "Player: " << calc_hand_value(hands[0], PLAYER).second << std::endl;
         // hand = show_hand(hands[0]);
         hand = show_hand(hands[0], PLAYER);
         std::cout << hand << std::endl;
@@ -120,16 +120,16 @@ void deal_cards(std::vector<std::vector<card>>& hands, deck& card_deck) {
     // Add two card to each player's hand, dealer's hand is last
     for (int i = 0; i < 2; i++)
     {
-        std::cout << "Dealing first card" << std::endl;
+        //std::cout << "Dealing first card" << std::endl;
 
         for (std::vector<card>& hand : hands) {
             pulled = card_deck.pull_card();
 
-            std::cout << "Pulled card is: " << pulled << std::endl;
+            //std::cout << "Pulled card is: " << pulled << std::endl;
 
             hand.push_back(pulled);
         }
     }
 
-    std::cout << "Dealer's hand size after dealing: " << hands[1].size() << std::endl;
+    //std::cout << "Dealer's hand size after dealing: " << hands[1].size() << std::endl;
 }

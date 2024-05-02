@@ -324,44 +324,58 @@ std::string show_hand(const std::vector<card> hand, const who person){
 //     return whole;
 // }
 
-std::pair<int, std::string> calc_hand_value(const std::vector<card> hand){
+std::pair<int, std::string> calc_hand_value(const std::vector<card> hand, const who person){
     std::pair<int, std::string> result;
     int total = 0;
     int ace_count = 0;
     bool contains_ace = false;
 
-    for(card card_in_hand: hand){
-        total += card_in_hand.get_value();
+    if(person == DEALER && hand.size() == 2){
+        card first = hand[0];
 
-        if(card_in_hand.get_rank() == ACE){
-            ace_count += 1;
-            contains_ace = true;
+        result.first = first.get_value();
+
+        if(first.get_rank() == ACE){
+            result.second = "11 (1) ?";
+        }
+        else{
+            result.second = std::to_string(result.first) + " ?";
         }
     }
+    else {
+        for(card card_in_hand: hand){
+            total += card_in_hand.get_value();
 
-    if(total > 21 && ace_count != 0){
-        while(total > 21){
-            total -= 10;
-            ace_count -= 1;
-
-            if(ace_count == 0){
-                break;
+            if(card_in_hand.get_rank() == ACE){
+                ace_count += 1;
+                contains_ace = true;
             }
         }
-    }
 
-    result.first = total;
+        if(total > 21 && ace_count != 0){
+            while(total > 21){
+                total -= 10;
+                ace_count -= 1;
 
-    while(ace_count != 0){
-        total -= 10;
-        ace_count -= 1;
-    }
+                if(ace_count == 0){
+                    break;
+                }
+            }
+        }
 
-    if(contains_ace){
-        result.second = std::to_string(result.first) + " (" + std::to_string(total) + ")";
-    }
-    else{
-        result.second = std::to_string(result.first);
+        result.first = total;
+
+        while(ace_count != 0){
+            total -= 10;
+            ace_count -= 1;
+        }
+
+        if(contains_ace){
+            result.second = std::to_string(result.first) + " (" + std::to_string(total) + ")";
+        }
+        else{
+            result.second = std::to_string(result.first);
+        }
     }
 
     return result;
