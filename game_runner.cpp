@@ -12,53 +12,80 @@ int main(int argc, char const *argv[])
 {
     system("clear");
 
-    deck card_deck;
-    card_deck.prepare_deck();
-
-    std::cout << "Starting deck size is: " << card_deck.get_starting() << std::endl;
-
     char processed_input;
     bool missinput = false;
-    std::vector<char> validInputs = {'1', '2'};
+    std::vector<char> validInputs = {'1', '2', '3'};
 
     card pulled;
-    // std::vector<card> dealer_hand;
-    // std::vector<card> player_hand;
+    card upcard;
 
     std::string hand;
 
-    std::vector<std::vector<card>> hands(2);
-    // hands.push_back(player_hand);
-    // hands.push_back(dealer_hand);
+    game_handler handler = game_handler(2);
+    handler.prepare_game();
 
-    deal_cards(hands, card_deck);
+    bot_player bot = bot_player(handler.get_hand_at_index(0));
+
+    upcard = handler.get_dealer()[0];
 
     while (true)
     {
-        std::cout << "Dealer: " << calc_hand_value(hands[1], DEALER).second << std::endl;
-        hand = show_hand(hands[1], DEALER);
+        if(!handler.get_game_finished()){
+            std::cout << "Dealer: " << calc_hand_value(handler.get_dealer(), DEALER).second << std::endl;
+            hand = show_hand(handler.get_dealer(), DEALER);
+        }
+        else{
+            std::cout << "Dealer: " << calc_hand_value(handler.get_dealer(), PLAYER).second << std::endl;
+            hand = show_hand(handler.get_dealer(), PLAYER);
+        }
         std::cout << hand << std::endl;
 
         std::cout << "\n" << std::endl;
 
-        std::cout << "Player: " << calc_hand_value(hands[0], PLAYER).second << std::endl;
-        hand = show_hand(hands[0], PLAYER);
+        std::cout << "Player: " << calc_hand_value(handler.get_hand_at_index(0), PLAYER).second << std::endl;
+        hand = show_hand(handler.get_hand_at_index(0), PLAYER);
         std::cout << hand << std::endl;
+
+        if(handler.get_game_finished()){
+            handler.check_win_condition();
+        }
 
         if(missinput){
             std::cout << "Incorrect input! Try again!" << std::endl;
             missinput = false;
         }
 
-        std::cout << "[1] Draw a card   [2] Leave" << std::endl;
+        if(!handler.get_game_finished()){
+            std::cout << "[1] Hit  [2] Stand  [3] Leave" << std::endl;
+
+            std::cout << "Should you hit? : " << bot.should_hit(upcard.get_value()) << std::endl;
+        }
+        else{
+            std::cout << "[1] Play again  [2] Leave" << std::endl;
+        }
 
         processed_input = handle_input(validInputs);
 
-        if(processed_input == '1'){
-            pulled = card_deck.pull_card();
-            hands[0].push_back(pulled);
+        if(processed_input == '1' && !handler.get_game_finished()){
+            pulled = handler.pull_for_player(0);
+
+            bot.add_card(pulled);
+
+            if(handler.get_points_at_index(0) >= 21){
+                handler.set_finished(true);
+            }
         }
-        else if(processed_input == '2'){
+        else if(processed_input == '1' && handler.get_game_finished()){
+            handler.prepare_game();
+
+            bot.set_hand(handler.get_hand_at_index(0));
+
+            upcard = handler.get_dealer()[0];
+        }
+        else if(processed_input == '2' && !handler.get_game_finished()){
+            handler.draw_for_dealer();
+        }
+        else if((processed_input == '3' && !handler.get_game_finished()) || (processed_input == '2' && handler.get_game_finished())){
             std::cout << "Exiting the program" << std::endl;
             break;
         }
@@ -93,18 +120,4 @@ char handle_input(const std::vector<char>& validInputs) {
     }
 
     return 'e';
-}
-
-void deal_cards(std::vector<std::vector<card>>& hands, deck& card_deck) {
-    card pulled;
-
-    // Add two card to each player's hand, dealer's hand is last
-    for (int i = 0; i < 2; i++)
-    {
-        for (std::vector<card>& hand : hands) {
-            pulled = card_deck.pull_card();
-
-            hand.push_back(pulled);
-        }
-    }
 }

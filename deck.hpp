@@ -1,6 +1,7 @@
 #ifndef DECK_HEADER
 #define DECK_HEADER
 
+#include <iostream>
 #include <vector>
 #include <algorithm> 
 #include <random> 
@@ -340,6 +341,28 @@ std::pair<int, std::string> calc_hand_value(const std::vector<card> hand, const 
     }
 
     return result;
+}
+
+bool is_ace_hand_devalued(const std::string& input) {
+    // Find the position of the '(' and ')'
+    size_t openParenIndex = input.find('(');
+    size_t closeParenIndex = input.find(')');
+
+    // If '(' or ')' is not found, or if they are not in the expected format
+    if (openParenIndex == std::string::npos || closeParenIndex == std::string::npos || openParenIndex >= closeParenIndex) {
+        return false;
+    }
+
+    // Extract X and Y substrings
+    std::string xStr = input.substr(0, openParenIndex);
+    std::string yStr = input.substr(openParenIndex + 1, closeParenIndex - openParenIndex - 1);
+
+    // Convert X and Y to integers
+    int x_num = stoi(xStr);
+    int y_num = stoi(yStr);
+
+    // Compare X and Y
+    return x_num == y_num;
 }
 
 #endif
