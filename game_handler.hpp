@@ -2,8 +2,11 @@
 #define HANDLER_HEADER
 
 #include <iostream>
+#include <map>
 
 #include "deck.hpp"
+
+// using SplitHands = std::map<int, std::vector<card>>;
 
 class game_handler
 {
@@ -16,6 +19,8 @@ private:
     std::vector<int> player_points;
 
     std::vector<std::vector<card>> player_hands;
+
+    std::map<int, std::vector<card>> split_hands;
 
     deck game_deck;
 
@@ -40,15 +45,14 @@ public:
         game_deck.prepare_deck();
     }
 
-    // game_handler(std::vector<std::vector<card>>& hands){
-    //     add_players(hands);
-    // }
-
     ~game_handler() {}
 
     void prepare_game(){
         std::vector<std::vector<card>> hands(number_of_players);
         player_points.clear();
+        split_hands.clear();
+
+        game_deck.prepare_deck();
 
         deal_cards(hands, game_deck);
 
@@ -111,6 +115,66 @@ public:
         }
 
         this->game_finished = true;
+    }
+
+    bool check_for_split(std::vector<card> hand){
+        if(hand.size() == 2 && hand[0] == hand[1]){
+            return true;
+        }
+
+        return false;
+    }
+
+    void split_hand_at_index(const int index){
+        card popped = player_hands[index][1];
+        std::vector<card> second_hand;
+        second_hand.push_back(popped);
+
+        player_hands[index].pop_back();
+
+        split_hands.insert({index, second_hand});
+    }
+
+    // void show_game_state(){
+    //     if(!game_finished){
+    //         std::cout << "Dealer: " << calc_hand_value(handler.get_dealer(), DEALER).second << std::endl;
+    //         hand = show_hand(handler.get_dealer(), DEALER);
+    //     }
+    //     else{
+    //         std::cout << "Dealer: " << calc_hand_value(handler.get_dealer(), PLAYER).second << std::endl;
+    //         hand = show_hand(handler.get_dealer(), PLAYER);
+    //     }
+    //     std::cout << hand << std::endl;
+
+    //     std::cout << "\n" << std::endl;
+
+    //     std::cout << "Player: " << calc_hand_value(handler.get_hand_at_index(0), PLAYER).second << std::endl;
+    //     hand = show_hand(handler.get_hand_at_index(0), PLAYER);
+    //     std::cout << hand << std::endl;
+    // }
+    void show_game_state(){
+        std::string string_hand;
+        std::vector<card> card_hand = get_dealer();
+
+        if(!game_finished){
+            std::cout << "Dealer: " << calc_hand_value(card_hand, DEALER).second << std::endl;
+            string_hand = show_hand(card_hand, DEALER);
+        }
+        else{
+            std::cout << "Dealer: " << calc_hand_value(card_hand, PLAYER).second << std::endl;
+            string_hand = show_hand(card_hand, PLAYER);
+        }
+
+        std::cout << string_hand << std::endl;
+
+        for(int i = 0; i < player_hands.size() - 1; i++){
+            card_hand = get_hand_at_index(i);
+
+            std::cout << "Player " << i + 1 << ": " << calc_hand_value(card_hand, PLAYER).second << std::endl;
+            string_hand = show_hand(card_hand, PLAYER);
+
+            std::cout << string_hand << std::endl;
+        }
     }
 
     bool get_game_finished(){

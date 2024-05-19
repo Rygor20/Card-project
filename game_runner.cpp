@@ -13,8 +13,11 @@ int main(int argc, char const *argv[])
     system("clear");
 
     char processed_input;
+    bool game_finished = false;
     bool missinput = false;
-    std::vector<char> validInputs = {'1', '2', '3'};
+    bool splittable = false;
+
+    std::vector<char> valid_inputs = {'1', '2', '3'};
 
     card pulled;
     card upcard;
@@ -30,24 +33,35 @@ int main(int argc, char const *argv[])
 
     while (true)
     {
-        if(!handler.get_game_finished()){
-            std::cout << "Dealer: " << calc_hand_value(handler.get_dealer(), DEALER).second << std::endl;
-            hand = show_hand(handler.get_dealer(), DEALER);
+        game_finished = handler.get_game_finished();
+
+        handler.show_game_state();
+
+        // if(!game_finished){
+        //     std::cout << "Dealer: " << calc_hand_value(handler.get_dealer(), DEALER).second << std::endl;
+        //     hand = show_hand(handler.get_dealer(), DEALER);
+        // }
+        // else{
+        //     std::cout << "Dealer: " << calc_hand_value(handler.get_dealer(), PLAYER).second << std::endl;
+        //     hand = show_hand(handler.get_dealer(), PLAYER);
+        // }
+        // std::cout << hand << std::endl;
+
+        // std::cout << "\n" << std::endl;
+
+        // std::cout << "Player: " << calc_hand_value(handler.get_hand_at_index(0), PLAYER).second << std::endl;
+        // hand = show_hand(handler.get_hand_at_index(0), PLAYER);
+        // std::cout << hand << std::endl;
+
+        if(game_finished){
+            handler.check_win_condition();
+        }
+
+        if(handler.check_for_split(handler.get_hand_at_index(0))){
+            std::cout << "Hand is splittable" << std::endl;
         }
         else{
-            std::cout << "Dealer: " << calc_hand_value(handler.get_dealer(), PLAYER).second << std::endl;
-            hand = show_hand(handler.get_dealer(), PLAYER);
-        }
-        std::cout << hand << std::endl;
-
-        std::cout << "\n" << std::endl;
-
-        std::cout << "Player: " << calc_hand_value(handler.get_hand_at_index(0), PLAYER).second << std::endl;
-        hand = show_hand(handler.get_hand_at_index(0), PLAYER);
-        std::cout << hand << std::endl;
-
-        if(handler.get_game_finished()){
-            handler.check_win_condition();
+            std::cout << "Hand is not splittable" << std::endl;
         }
 
         if(missinput){
@@ -55,7 +69,7 @@ int main(int argc, char const *argv[])
             missinput = false;
         }
 
-        if(!handler.get_game_finished()){
+        if(!game_finished){
             std::cout << "[1] Hit  [2] Stand  [3] Leave" << std::endl;
 
             std::cout << "Should you hit? : " << bot.should_hit(upcard.get_value()) << std::endl;
@@ -64,28 +78,34 @@ int main(int argc, char const *argv[])
             std::cout << "[1] Play again  [2] Leave" << std::endl;
         }
 
-        processed_input = handle_input(validInputs);
+        if(!game_finished){
+            processed_input = handle_input({'1', '2', '3'});
+        }
+        else{
+            processed_input = handle_input({'1', '2'});
+        }
+        //processed_input = handle_input(valid_inputs);
 
-        if(processed_input == '1' && !handler.get_game_finished()){
+        if(processed_input == '1' && !game_finished){
             pulled = handler.pull_for_player(0);
 
             bot.add_card(pulled);
 
             if(handler.get_points_at_index(0) >= 21){
                 handler.set_finished(true);
-            }
+            }        //processed_input = handle_input(valid_inputs);
         }
-        else if(processed_input == '1' && handler.get_game_finished()){
+        else if(processed_input == '1' && game_finished){
             handler.prepare_game();
 
             bot.set_hand(handler.get_hand_at_index(0));
 
             upcard = handler.get_dealer()[0];
         }
-        else if(processed_input == '2' && !handler.get_game_finished()){
+        else if(processed_input == '2' && !game_finished){
             handler.draw_for_dealer();
         }
-        else if((processed_input == '3' && !handler.get_game_finished()) || (processed_input == '2' && handler.get_game_finished())){
+        else if((processed_input == '3' && !game_finished) || (processed_input == '2' && game_finished)){
             std::cout << "Exiting the program" << std::endl;
             break;
         }
@@ -102,7 +122,7 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-char handle_input(const std::vector<char>& validInputs) {
+char handle_input(const std::vector<char>& valid_inputs) {
     std::string input;
     std::cin >> input;
 
@@ -112,10 +132,10 @@ char handle_input(const std::vector<char>& validInputs) {
         return 'e';
     }
 
-    char userInput = input[0];
-    for (char validInput : validInputs) {
-        if (userInput == validInput) {
-            return userInput;
+    char user_input = input[0];
+    for (char valid_input : valid_inputs) {
+        if (user_input == valid_input) {
+            return user_input;
         }
     }
 
