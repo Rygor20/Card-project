@@ -13,6 +13,8 @@ class game_handler
 private:
     int number_of_players;
 
+    int current_player_index;
+
     bool game_finished;
 
     // Na ostatnim indeksie zawsze dealer;
@@ -41,6 +43,7 @@ private:
 public:
     game_handler(const int players){
         this->number_of_players = players;
+        this->current_player_index = 0;
 
         game_deck.prepare_deck();
     }
@@ -60,6 +63,7 @@ public:
 
         this->player_hands = hands;
         this->game_finished = false;
+        this->current_player_index = 0;
     }
 
     void add_players(std::vector<std::vector<card>>& hands){
@@ -85,8 +89,24 @@ public:
         return player_hands[index];
     }
 
+    std::vector<card> get_current_hand(){
+        return player_hands[current_player_index];
+    }
+
     int get_points_at_index(const int index){
         return player_points[index];
+    }
+
+    int get_current_point(){
+        return player_points[current_player_index];
+    }
+
+    void pass_turn(){
+        current_player_index += 1;
+
+        if(current_player_index + 1 > number_of_players){
+            draw_for_dealer();
+        }
     }
 
     card pull_for_player(const int index){
@@ -118,7 +138,10 @@ public:
     }
 
     bool check_for_split(std::vector<card> hand){
-        if(hand.size() == 2 && hand[0] == hand[1]){
+        // if(hand.size() == 2 && hand[0] == hand[1]){
+        //     return true;
+        // }
+        if(hand.size() == 2 && hand[0].compare(hand[1])){
             return true;
         }
 
@@ -135,23 +158,6 @@ public:
         split_hands.insert({index, second_hand});
     }
 
-    // void show_game_state(){
-    //     if(!game_finished){
-    //         std::cout << "Dealer: " << calc_hand_value(handler.get_dealer(), DEALER).second << std::endl;
-    //         hand = show_hand(handler.get_dealer(), DEALER);
-    //     }
-    //     else{
-    //         std::cout << "Dealer: " << calc_hand_value(handler.get_dealer(), PLAYER).second << std::endl;
-    //         hand = show_hand(handler.get_dealer(), PLAYER);
-    //     }
-    //     std::cout << hand << std::endl;
-
-    //     std::cout << "\n" << std::endl;
-
-    //     std::cout << "Player: " << calc_hand_value(handler.get_hand_at_index(0), PLAYER).second << std::endl;
-    //     hand = show_hand(handler.get_hand_at_index(0), PLAYER);
-    //     std::cout << hand << std::endl;
-    // }
     void show_game_state(){
         std::string string_hand;
         std::vector<card> card_hand = get_dealer();
@@ -173,7 +179,23 @@ public:
             std::cout << "Player " << i + 1 << ": " << calc_hand_value(card_hand, PLAYER).second << std::endl;
             string_hand = show_hand(card_hand, PLAYER);
 
+            // if(split_hands.find(i) != split_hands.end()){
+            //     card_hand = split_hands[i];
+
+            //     std::cout << "Player " << i + 1 << " split:" << calc_hand_value(card_hand, PLAYER).second << std::endl;
+            //     string_hand = show_hand(card_hand, PLAYER);
+            // }
+
             std::cout << string_hand << std::endl;
+
+            if(split_hands.find(i) != split_hands.end()){
+                card_hand = split_hands[i];
+
+                std::cout << "Player " << i + 1 << " split:" << calc_hand_value(card_hand, PLAYER).second << std::endl;
+                string_hand = show_hand(card_hand, PLAYER);
+
+                std::cout << string_hand << std::endl;
+            }
         }
     }
 

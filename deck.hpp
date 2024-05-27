@@ -93,6 +93,10 @@ public:
         return this->value;
     }
 
+    bool compare(const card& other){
+        return this->rank == other.rank;
+    }
+
     card& operator=(const card& other) {
         if (this != &other) {
             this->suit = other.suit;
