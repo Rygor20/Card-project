@@ -1,6 +1,6 @@
 # Card-project
-Implementation of system allowing to play card games in your terminal.
-The goal is to create multiple types of games for general testing but also for testing bot game-winning algorithms and possibly AI
+The goal of this project is comparison of the effectiveness of different machine learning methods in creating a bot for card games.
+
 
 # Blackjack
 1. It uses standard 52 card deck
@@ -14,3 +14,12 @@ You automatically win if you hit exactly 21, you get 1.5x your starting bet and 
 Each player, starting from dealer's left, can either "hit" to get another card or "stay" keeping their hand and passing their turn to the next player. You have no maximum hand size so you can hit multiple times, but you automatically lose if the next card you draw makes the total sum of your cards exceed 21 and the dealer gets your bet. This is called a "bust".
 After each player's turn dealer reveals their second card. If their hand value is 16 or under, they have to hit, if it is 17 or higher, they have to stay. If the dealer busts, every player that hasn't busted in this round gets 2x their bet. If the dealer doesn't bust, only players with hands higher than the dealer's win 2x their bet and everyone else loses.
 Depending on the rules adopted at the table during your turn you can also "double", doubling your bet but only drawing a single card and ending your turn, "split", if you get two cards of the same value you can make two hands out of them, or "surrender" which makes you lose but only giving the dealer half of your starting bet.
+
+# Tested Methods
+1. Genetic Algorithm – An optimization technique inspired by natural selection. It evolves solutions over generations using selection, crossover, and mutation to find optimal or near-optimal solutions.
+
+2. Tabu Search – A metaheuristic algorithm that explores the solution space while avoiding recently visited solutions (stored in a "tabu list") to escape local optima and find better solutions.
+
+3. Q-Learning – A reinforcement learning algorithm that uses a Q-table to estimate the optimal action-value function. It updates values based on rewards and future estimates to learn an optimal policy.
+
+4. Monte Carlo Control – A reinforcement learning method that estimates action values based on averaged returns from sampled episodes, gradually improving policy performance over time.
