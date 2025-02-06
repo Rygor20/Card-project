@@ -93,8 +93,16 @@ public:
         return this->value;
     }
 
-    bool compare(const card& other){
-        return this->rank == other.rank;
+    bool compare(const card& other) const {
+        // Group TEN, JACK, QUEEN, KING into a "high rank" group
+        bool isHighRank = (rank == TEN || rank == JACK || rank == QUEEN || rank == KING);
+        bool otherIsHighRank = (other.rank == TEN || other.rank == JACK || other.rank == QUEEN || other.rank == KING);
+
+        if (isHighRank && otherIsHighRank) {
+            return true;
+        }
+
+        return rank == other.rank;
     }
 
     card& operator=(const card& other) {
@@ -151,6 +159,216 @@ public:
     }
 };
 
+
+int calc_hand_value(const std::vector<card>, const who);
+std::string card_to_string(card_suit, card_rank);
+
+
+class hand
+{
+private:
+    std::vector<card> cards;
+    int points;
+    bool is_player;
+    bool is_split;
+    bool is_doubled;
+
+    void update_points(){
+        int hand_value = calc_hand_value(cards, is_player ? PLAYER : DEALER);
+        points = hand_value;
+    }
+
+public:
+    hand() {}
+
+    hand(const who person){
+        points = 0;
+        is_player = (person == PLAYER);
+        is_split = false;
+        is_doubled = false;
+    }
+
+    ~hand() {}
+
+    void add_card(const card& card){
+        cards.push_back(card);
+        update_points();
+    }
+
+    card get_upcard(){
+        if(!is_player){
+            return cards[0];
+        }
+        else{
+            throw std::logic_error("Can't define 'upcard' for non-dealer hand.");
+        }
+    }
+
+    bool contains_ace(){
+        bool contains_ace = false;
+
+        for(card card_in_hand: cards){
+            if(card_in_hand.get_rank() == ACE){
+                contains_ace = true;
+            }
+        }
+
+        return contains_ace;
+    }
+
+    bool check_for_blackjack(){
+        if(cards.size() == 2 && points == 21 && !is_split){
+            return true;
+        }
+
+        return false;
+    }
+
+    bool check_for_split(){
+        if(cards.size() == 2 && cards[0].compare(cards[1]) && !is_split){
+            return true;
+        }
+
+        return false;
+    }
+
+    void double_bet(){
+        is_doubled = true;
+    }
+
+    hand get_split(){
+        if(!check_for_split()) {
+            throw std::logic_error("Hand cannot be split.");
+        }
+
+        hand new_hand(is_player ? PLAYER : DEALER);
+        new_hand.add_card(cards[1]);
+        new_hand.is_split = true;
+
+        cards.pop_back();
+        update_points();
+
+        return new_hand;
+    }
+
+    int get_points(){
+        return points;
+    }
+
+    bool get_is_player(){
+        return is_player;
+    }
+
+    bool get_is_split(){
+        return is_split;
+    }
+
+    bool get_is_doubled(){
+        return is_doubled;
+    }
+
+    std::string show_hand(bool reveal_second_card){
+        std::string whole;
+
+        for(int row = 0; row <= 3; row++){
+            for(card card_in_hand: cards){
+                std::string image = card_to_string(card_in_hand.get_suit(), card_in_hand.get_rank());
+                std::string line;
+
+                if(row == 0){
+                    line = image.substr(0, 15);
+                }
+                else if(row == 1){
+                    if(!is_player && cards.size() == 2 && card_in_hand == cards[1] && !reveal_second_card){
+                        line = flatV + "?  " + flatV;
+                    }
+                    else{
+                        line = image.substr(16, 11);
+                    }
+                }
+                else if(row == 2){
+                    if(!is_player && cards.size() == 2 && card_in_hand == cards[1] && !reveal_second_card){
+                        line = flatV + "  ?" + flatV;
+                    }
+                    else{
+                        line = image.substr(28, 9);
+                    }
+                }
+                else if(row == 3){
+                    line = image.substr(38, 15);
+                }
+
+                whole += line;
+                whole += "   ";
+            }
+            whole += "\n";
+        }
+
+        return whole;
+    }
+
+    std::string show_hand_content(bool show_full){
+        std::string result;
+        int total = 0;
+        int total_temp = 0;
+        int ace_count = 0;
+        bool contains_ace = false;
+
+        if(!show_full){
+            card first = cards[0];
+
+            if(first.get_rank() == ACE){
+                result = "11 (1) ?";
+            }
+            else{
+                result = std::to_string(first.get_value()) + " ?";
+            }
+        }
+        else {
+            for(card card_in_hand: cards){
+                total += card_in_hand.get_value();
+
+                if(card_in_hand.get_rank() == ACE){
+                    ace_count += 1;
+                    contains_ace = true;
+                }
+            }
+
+            if(total > 21 && ace_count != 0){
+                while(total > 21){
+                    total -= 10;
+                    ace_count -= 1;
+
+                    if(ace_count == 0){
+                        break;
+                    }
+                }
+            }
+
+            total_temp = total;
+
+            while(ace_count != 0){
+                total -= 10;
+                ace_count -= 1;
+            }
+
+            if(contains_ace){
+                result = std::to_string(total_temp) + " (" + std::to_string(total) + ")";
+            }
+            else{
+                result = std::to_string(total_temp);
+            }
+        }
+
+        return result;
+    }
+
+    void update_for_dealer(){
+        int hand_value = calc_hand_value(cards, PLAYER);
+        points = hand_value;
+    }
+
+};
 
 class deck
 {
@@ -248,68 +466,19 @@ std::string card_to_string(card_suit suit, card_rank rank){
     return result;
 }
 
-std::string show_hand(const std::vector<card> hand, const who person){
-    std::string whole;
-
-    for(int row = 0; row <= 3; row++){
-        for(card card_in_hand: hand){
-            std::string image = card_to_string(card_in_hand.get_suit(), card_in_hand.get_rank());
-            std::string line;
-
-            if(row == 0){
-                line = image.substr(0, 15);
-            }
-            else if(row == 1){
-                // line = image.substr(16, 11);
-                if(person == DEALER && hand.size() == 2 && card_in_hand == hand[1]){
-                    line = flatV + "?  " + flatV;
-                }
-                else{
-                    line = image.substr(16, 11);
-                }
-            }
-            else if(row == 2){
-                // line = image.substr(28, 9);
-                if(person == DEALER && hand.size() == 2 && card_in_hand == hand[1]){
-                    line = flatV + "  ?" + flatV;
-                }
-                else{
-                    line = image.substr(28, 9);
-                }
-            }
-            else if(row == 3){
-                line = image.substr(38, 15);
-            }
-
-            whole += line;
-            whole += "   ";
-        }
-        whole += "\n";
-    }
-
-    return whole;
-}
-
-std::pair<int, std::string> calc_hand_value(const std::vector<card> hand, const who person){
-    std::pair<int, std::string> result;
+int calc_hand_value(const std::vector<card> cards, const who person){
+    int result;
     int total = 0;
     int ace_count = 0;
     bool contains_ace = false;
 
-    if(person == DEALER && hand.size() == 2){
-        card first = hand[0];
+    if(person == DEALER && cards.size() == 2){
+        card first = cards[0];
 
-        result.first = first.get_value();
-
-        if(first.get_rank() == ACE){
-            result.second = "11 (1) ?";
-        }
-        else{
-            result.second = std::to_string(result.first) + " ?";
-        }
+        result = first.get_value();
     }
     else {
-        for(card card_in_hand: hand){
+        for(card card_in_hand: cards){
             total += card_in_hand.get_value();
 
             if(card_in_hand.get_rank() == ACE){
@@ -329,19 +498,7 @@ std::pair<int, std::string> calc_hand_value(const std::vector<card> hand, const 
             }
         }
 
-        result.first = total;
-
-        while(ace_count != 0){
-            total -= 10;
-            ace_count -= 1;
-        }
-
-        if(contains_ace){
-            result.second = std::to_string(result.first) + " (" + std::to_string(total) + ")";
-        }
-        else{
-            result.second = std::to_string(result.first);
-        }
+        result = total;
     }
 
     return result;
